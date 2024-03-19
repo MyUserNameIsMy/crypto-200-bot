@@ -47,7 +47,7 @@ export class HomeworkScene {
       await ctx.telegram.sendMessage(
         ctx.session['hm_channel'],
         `Student ID ${client.telegram_id}` +
-          `Student username${client.telegram_username}\n` +
+          `Student username @${client.telegram_username}\n` +
           `Homework ID: *${ctx.session['hm_id']}*`,
         { parse_mode: 'Markdown' },
       );
