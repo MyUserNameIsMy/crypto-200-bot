@@ -2,6 +2,7 @@
 /dist
 /node_modules
 .env
+session_db.json
 # Logs
 logs
 *.log

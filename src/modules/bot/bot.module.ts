@@ -7,10 +7,18 @@ import { HttpModule } from '@nestjs/axios';
 import { NewsScene } from './scenes/news.scene';
 import { BullModule } from '@nestjs/bull';
 import { HomeworkScene } from './scenes/homework.scene';
+import { NewsProcessor } from '../../queues/news.processor';
 
 @Module({
   imports: [HttpModule, BullModule.registerQueueAsync({ name: 'news' })],
-  providers: [BotUpdate, BotService, BaseScene, NewsScene, HomeworkScene],
+  providers: [
+    BotUpdate,
+    BotService,
+    BaseScene,
+    NewsScene,
+    HomeworkScene,
+    NewsProcessor,
+  ],
   controllers: [BotController],
 })
 export class BotModule {}

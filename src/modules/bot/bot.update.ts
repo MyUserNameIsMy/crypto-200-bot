@@ -34,6 +34,7 @@ export class BotUpdate {
         },
       );
       const isClient = await this.botService.getClient(client.telegram_id);
+      console.log('Is client' + isClient);
       if (!isClient) await this.botService.createClient(ctx, client);
       await ctx.scene.enter('base');
     } catch (err) {

@@ -10,7 +10,6 @@ import { Queue } from 'bull';
 import { ClientInterface } from '../../common/interfaces/client.interface';
 import { RoleEnum } from '../../common/enums/role.enum';
 import { SubscriptionEnum } from '../../common/enums/subscription.enum';
-import { dateTimestampProvider } from 'rxjs/internal/scheduler/dateTimestampProvider';
 
 @Injectable()
 export class BotService {
@@ -51,7 +50,7 @@ export class BotService {
       }
       return await firstValueFrom(
         this.httpService.post(
-          process.env.DIRECTUS_BASE + '/items/users',
+          `${process.env.DIRECTUS_BASE}/items/users`,
           client,
         ),
       );
@@ -65,15 +64,15 @@ export class BotService {
 
   async getClient(telegram_id: number) {
     try {
+      const url = `${process.env.DIRECTUS_BASE}/items/users?filter[telegram_id][_eq]=${telegram_id}&fields=*.*`;
+      console.log(url);
       const { data: students } = await firstValueFrom(
-        this.httpService.get(
-          process.env.DIRECTUS_BASE +
-            `/items/users?filter[telegram_id][_eq]=${telegram_id}&fields=*.*`,
-        ),
+        this.httpService.get(url),
       );
+      console.log(students);
       return students.data[0];
     } catch (err) {
-      console.error(err.message);
+      console.error('Error get client' + err.message);
       await this.forwardToAdmin(
         'Get' + JSON.stringify(telegram_id) + ' ' + err.message,
       );
@@ -84,7 +83,7 @@ export class BotService {
     try {
       return await firstValueFrom(
         this.httpService.patch(
-          process.env.DIRECTUS_BASE + `/items/users/${student_id}`,
+          `${process.env.DIRECTUS_BASE}/items/users/${student_id}`,
           client,
         ),
       );
@@ -127,7 +126,7 @@ export class BotService {
     };
     try {
       const { data: response } = await lastValueFrom(
-        this.httpService.get(process.env.DIRECTUS_BASE + `/items/homework`),
+        this.httpService.get(`${process.env.DIRECTUS_BASE}/items/homework`),
       );
       ctx.session['hm_id'] = response.data[0].id;
       await ctx.reply(response.data[0].description, {

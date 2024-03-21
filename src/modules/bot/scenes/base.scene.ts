@@ -25,8 +25,9 @@ export class BaseScene {
       firstname: ctx.from.first_name,
       lastname: ctx.from.last_name,
       telegram_username: ctx.from.username,
-      telegram_id: ctx.from.id,
+      telegram_id: ctx.from?.id,
     };
+    console.log(client);
 
     try {
       const student_system = await this.botService.getClient(
@@ -61,7 +62,9 @@ export class BaseScene {
       await ctx.reply(
         'Неполадки на сервисе. Пожалуйста обратитесь со скринами действий к техническому специалисту https://t.me/DoubledBo. Спасибо!',
       );
-      await this.botService.forwardToAdmin(JSON.stringify(client) + ' ' + err);
+      await this.botService.forwardToAdmin(
+        'Base ' + JSON.stringify(client) + ' ' + err,
+      );
     }
   }
 
@@ -75,6 +78,11 @@ export class BaseScene {
     await ctx.scene.enter('base');
   }
 
+  @Hears('/remove')
+  async remove(@Ctx() ctx: SceneContext) {
+    ctx.session = null;
+  }
+
   @Action(/begin/)
   async begin(@Ctx() ctx: SceneContext) {
     await ctx.scene.enter('begin');
@@ -84,10 +92,12 @@ export class BaseScene {
   async news(@Ctx() ctx: SceneContext) {
     await ctx.scene.enter('news');
   }
+
   @Action(/submit-homework/)
   async enterSubmit(@Ctx() ctx: SceneContext) {
     await ctx.scene.enter('homework');
   }
+
   @Action(/homework/)
   async showHomework(@Ctx() ctx: SceneContext & Context) {
     await this.botService.showHomework(ctx);
