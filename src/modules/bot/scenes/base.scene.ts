@@ -143,7 +143,7 @@ export class BaseScene {
       const hm_id = hm.replace(/\D/g, '');
       const homework = await this.botService.getHomework(hm_id);
       const day = new Date();
-      await ctx.reply(homework.description);
+      await ctx.reply(homework.description, { parse_mode: 'Markdown' });
       if (new Date(homework.due_to) < day) {
         await ctx.replyWithHTML(`*Время отправки домашнего задания прошло.*`, {
           parse_mode: 'Markdown',
@@ -151,7 +151,7 @@ export class BaseScene {
         await ctx.scene.enter('base');
       } else {
         await ctx.reply(
-          '**Для того чтобы выйти или завершить отправку, нажмите на** *Меню* **и выберите** *Меню бота* **или** *Главное меню*. *Чтобы начать сдачу задания обязательно сначала нажмите приложить файлы и только затем отправляйте файлы.*',
+          '**Для того чтобы выйти выберите** *Главное меню*. *Чтобы начать сдачу задания обязательно сначала нажмите приложить файлы и только затем отправляйте файлы.*',
           {
             parse_mode: 'Markdown',
             reply_markup: {
