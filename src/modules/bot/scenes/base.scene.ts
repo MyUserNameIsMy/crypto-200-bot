@@ -141,6 +141,7 @@ export class BaseScene {
       ctx.session['hm'] = ctx.update['callback_query']['data'];
       const hm = ctx.update['callback_query']['data'];
       const hm_id = hm.replace(/\D/g, '');
+      ctx.session['hm_id'] = hm_id;
       const homework = await this.botService.getHomework(hm_id);
       const day = new Date();
       await ctx.reply(homework.description, { parse_mode: 'Markdown' });
