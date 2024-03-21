@@ -50,6 +50,7 @@ export class NewsProcessor {
         await this.botService.forwardToAdmin(
           'Successfully sent: ' + JSON.stringify(success_sent),
         );
+        success_sent.length = 0;
       } while (students?.data.length > 0);
     } catch (err) {
       await this.botService.forwardToAdmin('Search users: ' + err.message);

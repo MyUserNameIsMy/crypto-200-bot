@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ReplyKeyboardMarkup } from 'telegraf/src/core/types/typegram';
 import { InjectBot } from 'nestjs-telegraf';
 import { Context, Telegraf } from 'telegraf';
-import { firstValueFrom, lastValueFrom } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
 import { SceneContext } from 'telegraf/typings/scenes';
 import { InjectQueue } from '@nestjs/bull';
@@ -65,11 +65,9 @@ export class BotService {
   async getClient(telegram_id: number) {
     try {
       const url = `${process.env.DIRECTUS_BASE}/items/users?filter[telegram_id][_eq]=${telegram_id}&fields=*.*`;
-      console.log(url);
       const { data: students } = await firstValueFrom(
         this.httpService.get(url),
       );
-      console.log(students);
       return students.data[0];
     } catch (err) {
       console.error('Error get client' + err.message);
@@ -81,6 +79,16 @@ export class BotService {
 
   async updateClient(client: ClientInterface, student_id: number) {
     try {
+      const { data: response } = await firstValueFrom(
+        this.httpService.get(
+          `${process.env.DIRECTUS_BASE}/items/homework_users?filter[user_id][_eq]=${student_id}`,
+        ),
+      );
+      const total_score = response.data.reduce(
+        (acc, curr) => acc + curr.score,
+        0,
+      );
+      client.score = total_score;
       return await firstValueFrom(
         this.httpService.patch(
           `${process.env.DIRECTUS_BASE}/items/users/${student_id}`,
@@ -117,38 +125,36 @@ export class BotService {
     });
   }
 
-  async showHomework(ctx: SceneContext & Context) {
-    const client = {
-      firstname: ctx.from.first_name,
-      lastname: ctx.from.last_name,
-      telegram_username: ctx.from.username,
-      telegram_id: ctx.from.id,
-    };
-    try {
-      const { data: response } = await lastValueFrom(
-        this.httpService.get(`${process.env.DIRECTUS_BASE}/items/homework`),
-      );
-      ctx.session['hm_id'] = response.data[0].id;
-      await ctx.reply(response.data[0].description, {
-        reply_markup: {
-          inline_keyboard: [
-            [
-              {
-                text: 'Сдать домашнее задание',
-                callback_data: 'submit-homework',
-              },
-            ],
-          ],
+  async chooseHomework() {
+    const inline_keyboard = [];
+    const day = new Date();
+    const { data: homeworks } = await firstValueFrom(
+      this.httpService.get(process.env.DIRECTUS_BASE + `/items/homework`),
+    );
+    let i = 1;
+    for (const homework of homeworks.data) {
+      inline_keyboard.push([
+        {
+          text: `ДЗ ${i++}` + (day > homework.due_to ? ' 🔴' : ' 🟢'),
+          callback_data: `hm-${homework.id}`,
         },
-        parse_mode: 'Markdown',
-      });
+      ]);
+    }
+    return {
+      inline_keyboard,
+    };
+  }
+
+  async getHomework(hm_id: number) {
+    try {
+      const { data: homework } = await firstValueFrom(
+        this.httpService.get(
+          process.env.DIRECTUS_BASE + `/items/homework/${hm_id}`,
+        ),
+      );
+      return homework.data;
     } catch (err) {
-      await this.forwardToAdmin(
-        'Show Homework' + JSON.stringify(client) + ' ' + err.message,
-      );
-      await ctx.reply(
-        'Возникли проблемы при отправке домашнего задания. Свяжитесь с техническим специалистом @DoubledBo.',
-      );
+      await this.forwardToAdmin('getHomework' + ' ' + err.message);
     }
   }
 }

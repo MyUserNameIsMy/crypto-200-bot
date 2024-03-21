@@ -11,4 +11,5 @@ export interface ClientInterface {
   subscription?: SubscriptionEnum;
   status?: StatusEnum;
   curator?: string;
+  score?: number;
 }
