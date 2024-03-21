@@ -133,9 +133,10 @@ export class BotService {
     );
     let i = 1;
     for (const homework of homeworks.data) {
+      console.log(day + ' ' + homework.due_to);
       inline_keyboard.push([
         {
-          text: `ДЗ ${i++}` + (day > homework.due_to ? ' 🔴' : ' 🟢'),
+          text: `ДЗ ${i++}` + (day > new Date(homework.due_to) ? ' 🔴' : ' 🟢'),
           callback_data: `hm-${homework.id}`,
         },
       ]);

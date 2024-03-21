@@ -144,7 +144,7 @@ export class BaseScene {
       const homework = await this.botService.getHomework(hm_id);
       const day = new Date();
       await ctx.reply(homework.description);
-      if (homework.due_to < day) {
+      if (new Date(homework.due_to) < day) {
         await ctx.replyWithHTML(`*Время отправки домашнего задания прошло.*`, {
           parse_mode: 'Markdown',
         });
@@ -157,6 +157,7 @@ export class BaseScene {
             reply_markup: {
               inline_keyboard: [
                 [{ text: 'Приложить файлы', callback_data: 'submit-homework' }],
+                [{ text: 'Главное меню', callback_data: 'menu' }],
               ],
             },
           },
@@ -168,6 +169,27 @@ export class BaseScene {
       );
       await this.botService.forwardToAdmin(
         'Homework ' + JSON.stringify(client) + ' ' + err,
+      );
+    }
+  }
+
+  @Action(/menu/)
+  async menu(@Ctx() ctx: SceneContext & Context) {
+    const client = {
+      firstname: ctx.from.first_name,
+      lastname: ctx.from.last_name,
+      telegram_username: ctx.from.username,
+      telegram_id: ctx.from?.id,
+    };
+    try {
+      await ctx.deleteMessage();
+      await ctx.scene.enter('base');
+    } catch (err) {
+      await ctx.reply(
+        'Неполадки на сервисе. Пожалуйста обратитесь со скринами действий к техническому специалисту https://t.me/DoubledBo. Спасибо!',
+      );
+      await this.botService.forwardToAdmin(
+        'Menu ' + JSON.stringify(client) + ' ' + err,
       );
     }
   }

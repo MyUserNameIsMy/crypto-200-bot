@@ -35,8 +35,7 @@ export class NewsProcessor {
         for (const user of students.data) {
           try {
             await this.bot.telegram.copyMessage(
-              // user.telegram_id,
-              process.env.ADMIN,
+              user.telegram_id,
               job.data['chat_id'],
               job.data['message_id'],
             );
