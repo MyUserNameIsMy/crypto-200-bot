@@ -20,6 +20,7 @@ export class BotUpdate {
       telegram_username: ctx.from.username,
       telegram_id: ctx.from.id,
     };
+    console.log(client);
     try {
       await ctx.reply(
         `‼Дорогие ученики Chinoesh Team‼\n\n` +
@@ -34,6 +35,7 @@ export class BotUpdate {
         },
       );
       const isClient = await this.botService.getClient(client.telegram_id);
+      console.log(isClient);
       if (!isClient) await this.botService.createClient(ctx, client);
       await ctx.scene.enter('base');
     } catch (err) {

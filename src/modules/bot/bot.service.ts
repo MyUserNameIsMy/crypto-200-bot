@@ -21,6 +21,7 @@ export class BotService {
 
   async createClient(ctx: Context & SceneContext, client: ClientInterface) {
     try {
+      console.log('Hello');
       const groups = {
         '-1002095716700': '@Akzhol_Bolatuly7',
         '-1002002787149': '@Nbm808',

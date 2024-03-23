@@ -5,6 +5,7 @@ import { InjectBot } from 'nestjs-telegraf';
 import { Context, Telegraf } from 'telegraf';
 import { firstValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
+import { SubscriptionEnum } from '../common/enums/subscription.enum';
 
 @Processor('news')
 export class NewsProcessor {
@@ -26,7 +27,7 @@ export class NewsProcessor {
         const response = await firstValueFrom(
           this.httpService.get(
             process.env.DIRECTUS_BASE +
-              `/items/users?fields=*.*&page=${page}&limit=${limit}`,
+              `/items/users?fields=*.*&filter[subscription][_eq]=${SubscriptionEnum.ELITE}&page=${page}&limit=${limit}`,
           ),
         );
         students = response?.data;
@@ -36,6 +37,7 @@ export class NewsProcessor {
           try {
             await this.bot.telegram.copyMessage(
               user.telegram_id,
+              // process.env.ADMIN,
               job.data['chat_id'],
               job.data['message_id'],
             );

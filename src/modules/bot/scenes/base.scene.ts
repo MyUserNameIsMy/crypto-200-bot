@@ -31,10 +31,12 @@ export class BaseScene {
       const student_system = await this.botService.getClient(
         client.telegram_id,
       );
+      console.log('sys' + JSON.stringify(student_system));
       const { data: response } = await this.botService.updateClient(
         client,
         student_system.id,
       );
+      console.log('res' + JSON.stringify(response));
       const channels = {
         '@Akzhol_Bolatuly7': -4115948871,
         '@Nbm808': -4148173937,
