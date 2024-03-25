@@ -46,10 +46,34 @@ export class BaseScene {
 
       ctx.session['curator'] = student_system.curator;
       ctx.session['hm_channel'] = channels[student_system.curator];
-
+      let direction = 'нет направления';
+      switch (student_system?.direction) {
+        case 1:
+          direction = 'Крипто Хантинг';
+          break;
+        case 2:
+          direction = 'Крипто Арбитраж';
+          break;
+        case 3:
+          direction = 'Крипто Хантинг + Крипто Арбитраж';
+          break;
+        case 4:
+          direction = 'Трейдинг';
+          break;
+        case 5:
+          direction = 'Крипто Хантинг + Трейдинг';
+          break;
+        case 6:
+          direction = 'Крипто Арбитраж + Трейдинг';
+          break;
+        case 7:
+          direction = 'Крипто Хантинг + Крипто Арбитраж + Трейдинг';
+          break;
+      }
       await ctx.reply(
         `Личный кабинет: ${student_system.telegram_username}\n` +
-          `Набранные очки: ${student_system.score}\n`,
+          `Набранные очки: ${student_system.score}\n` +
+          `Направление: ${direction}`,
       );
 
       await ctx.reply('Нажмите чтобы выбрать действие.', {
@@ -60,7 +84,7 @@ export class BaseScene {
             client?.telegram_id?.toString() == process.env.ADMIN
               ? [{ text: 'Новости', callback_data: 'news' }]
               : [],
-            client?.telegram_id?.toString() == process.env.ADMIN
+            new Date('2024-01-26T03:00:00') < new Date()
               ? [{ text: 'Выбрать направление', callback_data: 'direction' }]
               : [],
           ],
@@ -96,10 +120,128 @@ export class BaseScene {
     await ctx.scene.enter('begin');
   }
 
+  @Action('confirm')
+  async confirmOption(@Ctx() ctx: SceneContext) {
+    const client = {
+      firstname: ctx.from.first_name,
+      lastname: ctx.from.last_name,
+      telegram_username: ctx.from.username,
+      telegram_id: ctx.from?.id,
+    };
+    try {
+      await ctx.reply(
+        'Вы выбрали: \n' +
+          (ctx.session['option1'] ? ' Крипто Хантинг\n' : '') +
+          (ctx.session['option2'] ? ' Крипто Арбитраж\n' : '') +
+          (ctx.session['option3'] ? ' Трейдинг\n' : ''),
+      );
+      let direction = 0;
+      if (ctx.session['option1']) {
+        direction += 1;
+      }
+      if (ctx.session['option2']) {
+        direction += 2;
+      }
+      if (ctx.session['option3']) {
+        direction += 4;
+      }
+
+      if (direction == 0) {
+        await ctx.reply(
+          'Вы не сделали выбор направления. Прошу вас сделать выбор зайдя в Меню и Выбрать направление',
+        );
+        await ctx.scene.enter('base');
+        return;
+      }
+      await this.botService.updateDirection(client.telegram_id, direction);
+      await ctx.scene.enter('base');
+    } catch (err) {
+      await ctx.reply(
+        'Ошибка при выборе направления. Пожалуйста обратитесь со скринами действий к техническому специалисту https://t.me/DoubledBo. Спасибо!',
+      );
+      await this.botService.forwardToAdmin(
+        'Направление ' +
+          JSON.stringify(client) +
+          ' ' +
+          err +
+          (ctx.session['option1'] ? ' Крипто Хантинг\n' : '') +
+          (ctx.session['option2'] ? ' Крипто Арбитраж\n' : '') +
+          (ctx.session['option3'] ? ' Трейдинг\n' : ''),
+      );
+    }
+  }
+
   @Action(/direction/)
   async chooseDirection(@Ctx() ctx: SceneContext) {
-    await ctx.reply(new Date().toString());
-    console.log(new Date().toString());
+    const client = {
+      firstname: ctx.from.first_name,
+      lastname: ctx.from.last_name,
+      telegram_username: ctx.from.username,
+      telegram_id: ctx.from?.id,
+    };
+    try {
+      const option = ctx.update['callback_query']['data'].replace(/\D/g, '');
+      if (option == 1) {
+        ctx.session['option1'] = !ctx.session['option1'];
+      } else if (option == 2) {
+        ctx.session['option2'] = !ctx.session['option2'];
+      } else if (option == 3) {
+        ctx.session['option3'] = !ctx.session['option3'];
+      } else {
+        ctx.session['option1'] = false;
+        ctx.session['option2'] = false;
+        ctx.session['option3'] = false;
+      }
+      await ctx.deleteMessage();
+      await ctx.reply(
+        'Ваш выбор:\n' +
+          (ctx.session['option1'] ? ' Крипто Хантинг\n' : '') +
+          (ctx.session['option2'] ? ' Крипто Арбитраж\n' : '') +
+          (ctx.session['option3'] ? ' Трейдинг\n' : '') +
+          'Чтобы подтвердить свой выбор нажмите Подтвердить.',
+        {
+          reply_markup: {
+            inline_keyboard: [
+              [
+                {
+                  text:
+                    'Крипто Хантинг' + (ctx.session['option1'] ? ' 🟢' : ' 🔴'),
+                  callback_data: 'direction-1',
+                },
+              ],
+              [
+                {
+                  text:
+                    'Крипто Арбитраж' +
+                    (ctx.session['option2'] ? ' 🟢' : ' 🔴'),
+                  callback_data: 'direction-2',
+                },
+              ],
+              [
+                {
+                  text: 'Трейдинг' + (ctx.session['option3'] ? ' 🟢' : ' 🔴'),
+                  callback_data: 'direction-3',
+                },
+              ],
+              [{ text: 'Подтвердить', callback_data: 'confirm' }],
+            ],
+          },
+        },
+      );
+    } catch (err) {
+      await ctx.reply(
+        'Ошибка при выборе направления. Пожалуйста обратитесь со скринами действий к техническому специалисту https://t.me/DoubledBo. Спасибо!',
+      );
+      await this.botService.forwardToAdmin(
+        'Направление ' +
+          JSON.stringify(client) +
+          ' ' +
+          err +
+          (ctx.session['option1'] ? ' Крипто Хантинг\n' : '') +
+          (ctx.session['option2'] ? ' Крипто Арбитраж\n' : '') +
+          (ctx.session['option3'] ? ' Трейдинг\n' : ''),
+      );
+    }
   }
 
   @Action(/news/)

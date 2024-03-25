@@ -91,6 +91,23 @@ export class BotService {
       );
     }
   }
+  async updateDirection(telegram_id: number, direction: number) {
+    try {
+      const student = await this.getClient(telegram_id);
+      return await firstValueFrom(
+        this.httpService.patch(
+          `${process.env.DIRECTUS_BASE}/items/users/${student.id}`,
+          {
+            direction: direction,
+          },
+        ),
+      );
+    } catch (err) {
+      await this.forwardToAdmin(
+        'Update Direction' + JSON.stringify(telegram_id) + ' ' + err.message,
+      );
+    }
+  }
 
   async forwardToAdmin(details: string) {
     try {
