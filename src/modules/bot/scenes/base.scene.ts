@@ -11,6 +11,7 @@ import { SceneContext } from 'telegraf/typings/scenes';
 import { BotService } from '../bot.service';
 import { Context, Telegraf } from 'telegraf';
 import { ClientInterface } from '../../../common/interfaces/client.interface';
+import { SubscriptionEnum } from '../../../common/enums/subscription.enum';
 
 @Injectable()
 @Scene('base')
@@ -73,7 +74,10 @@ export class BaseScene {
       await ctx.reply(
         `Личный кабинет: ${student_system.telegram_username}\n` +
           `Набранные очки: ${student_system.score}\n` +
-          `Направление: ${direction}`,
+          student_system?.subscription ==
+          SubscriptionEnum.ELITE
+          ? `Направление: ${direction}`
+          : '',
       );
 
       await ctx.reply('Нажмите чтобы выбрать действие.', {
@@ -84,7 +88,8 @@ export class BaseScene {
             client?.telegram_id?.toString() == process.env.ADMIN
               ? [{ text: 'Новости', callback_data: 'news' }]
               : [],
-            new Date('2024-01-26T03:00:00') < new Date()
+            new Date('2024-01-26T03:00:00') < new Date() &&
+            student_system?.subscription == SubscriptionEnum.ELITE
               ? [{ text: 'Выбрать направление', callback_data: 'direction' }]
               : [],
           ],
