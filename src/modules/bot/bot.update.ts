@@ -14,6 +14,12 @@ export class BotUpdate {
 
   @Start()
   async start(@Ctx() ctx: SceneContext & Context) {
+    if (ctx.chat.type !== 'private') {
+      await ctx.reply(
+        'Перейдите в личную переписку https://t.me/chinoesh_tech_bot ',
+      );
+      return;
+    }
     const client = {
       firstname: ctx.from.first_name,
       lastname: ctx.from.last_name,
