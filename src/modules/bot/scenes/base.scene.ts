@@ -23,6 +23,12 @@ export class BaseScene {
 
   @SceneEnter()
   async enter(@Ctx() ctx: SceneContext & Context) {
+    if (ctx.chat.type !== 'private') {
+      await ctx.reply(
+        'Перейдите в личную переписку https://t.me/chinoesh_tech_bot ',
+      );
+      return;
+    }
     const client: ClientInterface = {
       firstname: ctx.from.first_name,
       lastname: ctx.from.last_name,
@@ -72,8 +78,8 @@ export class BaseScene {
           break;
       }
       await ctx.reply(
-        `Личный кабинет: ${student_system.telegram_username}\n` +
-          `Набранные очки: ${student_system.score}\n` +
+        `Личный кабинет: ${student_system?.telegram_username}\n` +
+          `Набранные очки: ${student_system?.score}\n` +
           `Направление: ${direction}`,
       );
 
