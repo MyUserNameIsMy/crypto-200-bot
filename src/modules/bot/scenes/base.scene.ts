@@ -91,12 +91,13 @@ export class BaseScene {
             client?.telegram_id?.toString() == process.env.ADMIN
               ? [{ text: 'Новости', callback_data: 'news' }]
               : [],
-            new Date('2024-01-26T03:00:00') < new Date()
+            new Date('2024-01-26T09:00:00') < new Date()
               ? [{ text: 'Выбрать направление', callback_data: 'direction' }]
               : [],
           ],
         },
       });
+      await this.botService.forwardToAdmin(`Base ${new Date()}`);
     } catch (err) {
       await ctx.reply(
         'Неполадки на сервисе. Пожалуйста обратитесь со скринами действий к техническому специалисту https://t.me/DoubledBo. Спасибо!',
