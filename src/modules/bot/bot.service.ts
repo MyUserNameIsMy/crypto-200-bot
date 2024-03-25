@@ -71,7 +71,6 @@ export class BotService {
       );
       return students.data[0];
     } catch (err) {
-      console.error('Error get client' + err.message);
       await this.forwardToAdmin(
         'Get' + JSON.stringify(telegram_id) + ' ' + err.message,
       );
@@ -80,16 +79,6 @@ export class BotService {
 
   async updateClient(client: ClientInterface, student_id: number) {
     try {
-      const { data: response } = await firstValueFrom(
-        this.httpService.get(
-          `${process.env.DIRECTUS_BASE}/items/homework_users?filter[user_id][_eq]=${student_id}`,
-        ),
-      );
-      const total_score = response.data.reduce(
-        (acc, curr) => acc + curr.score,
-        0,
-      );
-      client.score = total_score;
       return await firstValueFrom(
         this.httpService.patch(
           `${process.env.DIRECTUS_BASE}/items/users/${student_id}`,
@@ -97,7 +86,6 @@ export class BotService {
         ),
       );
     } catch (err) {
-      console.error(err.message);
       await this.forwardToAdmin(
         'Update' + JSON.stringify(client) + ' ' + err.message,
       );

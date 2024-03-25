@@ -10,6 +10,7 @@ import {
 import { SceneContext } from 'telegraf/typings/scenes';
 import { BotService } from '../bot.service';
 import { Context, Telegraf } from 'telegraf';
+import { ClientInterface } from '../../../common/interfaces/client.interface';
 
 @Injectable()
 @Scene('base')
@@ -21,7 +22,7 @@ export class BaseScene {
 
   @SceneEnter()
   async enter(@Ctx() ctx: SceneContext & Context) {
-    const client = {
+    const client: ClientInterface = {
       firstname: ctx.from.first_name,
       lastname: ctx.from.last_name,
       telegram_username: ctx.from.username,
@@ -31,12 +32,10 @@ export class BaseScene {
       const student_system = await this.botService.getClient(
         client.telegram_id,
       );
-      console.log('sys' + JSON.stringify(student_system));
       const { data: response } = await this.botService.updateClient(
         client,
         student_system.id,
       );
-      console.log('res' + JSON.stringify(response));
       const channels = {
         '@Akzhol_Bolatuly7': -4115948871,
         '@Nbm808': -4148173937,
@@ -44,22 +43,25 @@ export class BaseScene {
         '@dan7yar': -4197036835,
         '@sherniaz16': -4167072562,
       };
-      ctx.session['curator'] = response.data.curator;
-      ctx.session['hm_channel'] = channels[response.data.curator];
+
+      ctx.session['curator'] = student_system.curator;
+      ctx.session['hm_channel'] = channels[student_system.curator];
+
       await ctx.reply(
-        `*Личный кабинет:* **${client.telegram_username}**\n` +
-          `*Набранные очки:* **${response.data.score}**\n`,
-        {
-          parse_mode: 'Markdown',
-        },
+        `Личный кабинет: ${student_system.telegram_username}\n` +
+          `Набранные очки: ${student_system.score}\n`,
       );
+
       await ctx.reply('Нажмите чтобы выбрать действие.', {
         reply_markup: {
           inline_keyboard: [
             [{ text: 'Домашнее задание', callback_data: 'homework' }],
             [{ text: 'Мой куратор', callback_data: 'my-curator' }],
-            client.telegram_id.toString() == process.env.ADMIN
+            client?.telegram_id?.toString() == process.env.ADMIN
               ? [{ text: 'Новости', callback_data: 'news' }]
+              : [],
+            client?.telegram_id?.toString() == process.env.ADMIN
+              ? [{ text: 'Выбрать направление', callback_data: 'direction' }]
               : [],
           ],
         },
@@ -92,6 +94,12 @@ export class BaseScene {
   @Action(/begin/)
   async begin(@Ctx() ctx: SceneContext) {
     await ctx.scene.enter('begin');
+  }
+
+  @Action(/direction/)
+  async chooseDirection(@Ctx() ctx: SceneContext) {
+    await ctx.reply(new Date().toString());
+    console.log(new Date().toString());
   }
 
   @Action(/news/)

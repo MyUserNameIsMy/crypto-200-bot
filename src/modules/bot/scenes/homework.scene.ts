@@ -44,16 +44,20 @@ export class HomeworkScene {
       telegram_id: ctx.from.id,
     };
     try {
+      console.log(client);
+      console.log(ctx.session['hm_channel']);
+      console.log(ctx.session['hm_id']);
       await ctx.telegram.sendMessage(
         ctx.session['hm_channel'],
         `Student ID: ${client.telegram_id}\n` +
           `Student username: @${client.telegram_username}\n` +
-          `Homework ID: *${ctx.session['hm_id']}*`,
-        { parse_mode: 'Markdown' },
+          `Homework ID: ${ctx.session['hm_id']}`,
       );
       await ctx.copyMessage(ctx.session['hm_channel']);
       await ctx.reply('Файл принят');
     } catch (err) {
+      console.log(err);
+      console.log(err.message);
       await this.botService.forwardToAdmin(
         err.message + `${ctx.message.from.id} ${ctx.message.from.username}`,
       );
