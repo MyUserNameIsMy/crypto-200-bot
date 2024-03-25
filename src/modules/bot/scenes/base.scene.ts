@@ -74,10 +74,7 @@ export class BaseScene {
       await ctx.reply(
         `Личный кабинет: ${student_system.telegram_username}\n` +
           `Набранные очки: ${student_system.score}\n` +
-          student_system?.subscription ==
-          SubscriptionEnum.ELITE
-          ? `Направление: ${direction}`
-          : '',
+          `Направление: ${direction}`,
       );
 
       await ctx.reply('Нажмите чтобы выбрать действие.', {
@@ -88,8 +85,7 @@ export class BaseScene {
             client?.telegram_id?.toString() == process.env.ADMIN
               ? [{ text: 'Новости', callback_data: 'news' }]
               : [],
-            new Date('2024-01-26T03:00:00') < new Date() &&
-            student_system?.subscription == SubscriptionEnum.ELITE
+            new Date('2024-01-26T03:00:00') < new Date()
               ? [{ text: 'Выбрать направление', callback_data: 'direction' }]
               : [],
           ],
