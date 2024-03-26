@@ -84,8 +84,8 @@ export class NewsProcessor {
           console.log('Sending');
           try {
             await this.bot.telegram.sendMessage(
-              // user.telegram_id,
-              process.env.ADMIN,
+              user.telegram_id,
+              // process.env.ADMIN,
               job.data['message'],
             );
             success_sent.push({ telegram_id: user.telegram_id });
