@@ -138,7 +138,18 @@ export class BotService {
     });
   }
 
-  async chooseHomework() {
+  async chooseHomework(direction: number) {
+    console.log(direction);
+    const groups = {
+      1: [0, 1],
+      2: [0, 2],
+      3: [0, 1, 2],
+      4: [0, 1, 3],
+      5: [0, 1, 4],
+      6: [0, 2, 4],
+      7: [0, 1, 2, 4],
+      0: [0],
+    };
     const inline_keyboard = [];
     const day = new Date();
     const { data: homeworks } = await firstValueFrom(
@@ -146,13 +157,15 @@ export class BotService {
     );
     let i = 1;
     for (const homework of homeworks.data) {
-      console.log(day + ' ' + homework.due_to);
-      inline_keyboard.push([
-        {
-          text: `ДЗ ${i++}` + (day > new Date(homework.due_to) ? ' 🔴' : ' 🟢'),
-          callback_data: `hm-${homework.id}`,
-        },
-      ]);
+      if (groups[direction].includes(+homework.direction)) {
+        inline_keyboard.push([
+          {
+            text:
+              `ДЗ ${i++}` + (day > new Date(homework.due_to) ? ' 🔴' : ' 🟢'),
+            callback_data: `hm-${homework.id}`,
+          },
+        ]);
+      }
     }
     return {
       inline_keyboard,

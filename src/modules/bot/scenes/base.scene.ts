@@ -11,7 +11,6 @@ import { SceneContext } from 'telegraf/typings/scenes';
 import { BotService } from '../bot.service';
 import { Context, Telegraf } from 'telegraf';
 import { ClientInterface } from '../../../common/interfaces/client.interface';
-import { SubscriptionEnum } from '../../../common/enums/subscription.enum';
 
 @Injectable()
 @Scene('base')
@@ -35,6 +34,7 @@ export class BaseScene {
       telegram_username: ctx.from.username,
       telegram_id: ctx.from?.id,
     };
+
     try {
       const student_system = await this.botService.getClient(
         client.telegram_id,
@@ -43,6 +43,9 @@ export class BaseScene {
         client,
         student_system.id,
       );
+      ctx.session['direction'] = student_system?.direction
+        ? student_system?.direction
+        : 0;
       const channels = {
         '@Akzhol_Bolatuly7': -4115948871,
         '@Nbm808': -4148173937,
@@ -279,7 +282,9 @@ export class BaseScene {
       await ctx.reply(
         'Выберите домашнее задание которое хотите отправить.\n🔴 означает что время отправки прошло.\n🟢 означает можно еще сдавать.\nЕсли нет заданий, то вам еще не назначали задание.',
         {
-          reply_markup: await this.botService.chooseHomework(),
+          reply_markup: await this.botService.chooseHomework(
+            ctx.session['direction'],
+          ),
         },
       );
     } catch (err) {
