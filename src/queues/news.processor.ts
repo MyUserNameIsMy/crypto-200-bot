@@ -114,6 +114,67 @@ export class NewsProcessor {
     }
   }
 
+  @Process('post_groups')
+  async postGroups(job: Job<any>) {
+    let page = 0;
+    const limit = 20;
+    let progress = 0;
+    try {
+      const filter = {
+        _and: [
+          {
+            direction: {
+              _gte: 0,
+            },
+          },
+          {
+            subscription: {
+              _eq: SubscriptionEnum.ELITE,
+            },
+          },
+          {
+            group: {
+              _nnull: true,
+            },
+          },
+        ],
+      };
+      const success_sent = [];
+      let students: any;
+      do {
+        const url =
+          process.env.DIRECTUS_BASE +
+          `/items/users?fields=*.*&filter=${JSON.stringify(filter)}&offset=${page * limit}&limit=${limit}`;
+        console.log(url);
+        const response = await firstValueFrom(this.httpService.get(url));
+        students = response?.data;
+        page++;
+
+        for (const user of students.data) {
+          console.log('Sending');
+          try {
+            await this.bot.telegram.sendMessage(
+              user.telegram_id,
+              // process.env.ADMIN,
+              `Вступите в группу по вашему направлению ${user.group}`,
+            );
+            success_sent.push({ telegram_id: user.telegram_id });
+            await job.progress(progress);
+            progress += 1;
+          } catch (err) {
+            console.log(`Send news to ${user.telegram_id}: ` + err.message);
+          }
+        }
+        await this.botService.forwardToAdmin(
+          'Successfully sent: ' + JSON.stringify(success_sent),
+        );
+        success_sent.length = 0;
+      } while (students?.data.length > 0);
+    } catch (err) {
+      await this.botService.forwardToAdmin('Search users: ' + err.message);
+    }
+  }
+
   @OnQueueActive()
   onActive(job: Job) {
     console.log(

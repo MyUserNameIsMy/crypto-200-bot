@@ -171,4 +171,9 @@ export class BotService {
       await this.forwardToAdmin('getHomework' + ' ' + err.message);
     }
   }
+
+  async postGroups() {
+    await this.newsQueue.add('post_groups', { key: 'value' });
+    return 'Success';
+  }
 }
