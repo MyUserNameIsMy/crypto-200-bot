@@ -80,7 +80,8 @@ export class BaseScene {
       await ctx.reply(
         `Личный кабинет: ${student_system?.telegram_username}\n` +
           `Набранные очки: ${student_system?.score}\n` +
-          `Направление: ${direction}`,
+          `Направление: ${direction}\n` +
+          `Моя почта: ${student_system?.email ? student_system?.email : 'Почта не указана'}`,
       );
 
       await ctx.reply('Нажмите чтобы выбрать действие.', {
@@ -91,9 +92,7 @@ export class BaseScene {
             client?.telegram_id?.toString() == process.env.ADMIN
               ? [{ text: 'Новости', callback_data: 'news' }]
               : [],
-            new Date('2024-01-26T09:00:00') < new Date()
-              ? [{ text: 'Выбрать направление', callback_data: 'direction' }]
-              : [],
+            [{ text: 'Изменить эмэйл', callback_data: 'change_email' }],
           ],
         },
       });
@@ -126,6 +125,11 @@ export class BaseScene {
   @Action(/begin/)
   async begin(@Ctx() ctx: SceneContext) {
     await ctx.scene.enter('begin');
+  }
+
+  @Action(/change_email/)
+  async changeEmail(@Ctx() ctx: SceneContext) {
+    await ctx.scene.enter('email');
   }
 
   @Action('confirm')

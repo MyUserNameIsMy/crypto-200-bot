@@ -8,6 +8,7 @@ import { NewsScene } from './scenes/news.scene';
 import { BullModule } from '@nestjs/bull';
 import { HomeworkScene } from './scenes/homework.scene';
 import { NewsProcessor } from '../../queues/news.processor';
+import { EmailScene } from './scenes/email.scene';
 
 @Module({
   imports: [HttpModule, BullModule.registerQueueAsync({ name: 'news' })],
@@ -18,6 +19,7 @@ import { NewsProcessor } from '../../queues/news.processor';
     NewsScene,
     HomeworkScene,
     NewsProcessor,
+    EmailScene,
   ],
   controllers: [BotController],
 })
