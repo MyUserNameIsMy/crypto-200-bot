@@ -131,6 +131,13 @@ export class BotService {
     });
   }
 
+  async sendDirection(message: string, directions: number[]) {
+    await this.newsQueue.add('post_direction', {
+      message: message,
+      directions: directions,
+    });
+  }
+
   async chooseHomework() {
     const inline_keyboard = [];
     const day = new Date();
