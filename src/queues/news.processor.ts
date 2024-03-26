@@ -65,16 +65,25 @@ export class NewsProcessor {
     let progress = 0;
     try {
       const filter = {
-        direction: {
-          _in: job.data['directions'],
-        },
+        _and: [
+          {
+            direction: {
+              _in: job.data['directions'],
+            },
+          },
+          {
+            subscription: {
+              _eq: SubscriptionEnum.ELITE,
+            },
+          },
+        ],
       };
       const success_sent = [];
       let students: any;
       do {
         const url =
           process.env.DIRECTUS_BASE +
-          `/items/users?fields=*.*&filter=${JSON.stringify(filter)}&page=${page}&limit=${limit}`;
+          `/items/users?fields=*.*&filter=${JSON.stringify(filter)}&offset=${page * limit}&limit=${limit}`;
         console.log(url);
         const response = await firstValueFrom(this.httpService.get(url));
         students = response?.data;
