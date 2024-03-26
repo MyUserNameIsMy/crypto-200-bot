@@ -61,7 +61,7 @@ export class EmailScene {
       const student_system = await this.botService.getClient(
         client.telegram_id,
       );
-      client.email = ctx.session['email'];
+      client.email = ctx.session['email']?.trim();
       const { data: response } = await this.botService.updateClient(
         client,
         student_system.id,
