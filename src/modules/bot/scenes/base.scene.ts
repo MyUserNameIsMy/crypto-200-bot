@@ -53,7 +53,6 @@ export class BaseScene {
         '@dan7yar': -4197036835,
         '@sherniaz16': -4167072562,
       };
-      g;
       ctx.session['curator'] = student_system?.new_curator;
       ctx.session['hm_channel'] = channels[student_system.curator];
       let direction = 'нет направления';
