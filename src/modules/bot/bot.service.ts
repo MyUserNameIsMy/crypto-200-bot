@@ -89,7 +89,7 @@ export class BotService {
       0: [0],
     };
     try {
-      const url = `${process.env.DIRECTUS_BASE}/items/meetings`;
+      const url = `${process.env.DIRECTUS_BASE}/items/meetings?filter[is_active][_eq]=true`;
       const { data: meeetings } = await lastValueFrom(
         this.httpService.get(url),
       );
@@ -101,7 +101,7 @@ export class BotService {
         }
       }
       if (flag) {
-        await ctx.reply('Нет ближайщих встреч');
+        await ctx.reply('Нет ближайших встреч');
         return;
       }
     } catch (err) {
