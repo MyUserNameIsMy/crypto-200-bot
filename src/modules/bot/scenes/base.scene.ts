@@ -95,6 +95,7 @@ export class BaseScene {
               ? [{ text: 'Новости', callback_data: 'news' }]
               : [],
             [{ text: 'Изменить эмэйл', callback_data: 'change_email' }],
+            [{ text: 'Встречи', callback_data: 'meetings' }],
           ],
         },
       });
@@ -122,6 +123,26 @@ export class BaseScene {
   @Hears('/remove')
   async remove(@Ctx() ctx: SceneContext) {
     ctx.session = null;
+  }
+
+  @Action(/meetings/)
+  async getMeetings(@Ctx() ctx: SceneContext) {
+    const client = {
+      firstname: ctx.from.first_name,
+      lastname: ctx.from.last_name,
+      telegram_username: ctx.from.username,
+      telegram_id: ctx.from?.id,
+    };
+    try {
+      await this.botService.sendMeetings(ctx);
+    } catch (err) {
+      await ctx.reply(
+        'Ошибка при получении встреч. Пожалуйста обратитесь со скринами действий к техническому специалисту https://t.me/DoubledBo. Спасибо!',
+      );
+      await this.botService.forwardToAdmin(
+        'Встречи ' + JSON.stringify(client) + err.message,
+      );
+    }
   }
 
   @Action(/begin/)

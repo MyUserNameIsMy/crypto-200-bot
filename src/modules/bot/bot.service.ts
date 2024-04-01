@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ReplyKeyboardMarkup } from 'telegraf/src/core/types/typegram';
 import { InjectBot } from 'nestjs-telegraf';
 import { Context, Telegraf } from 'telegraf';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, lastValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
 import { SceneContext } from 'telegraf/typings/scenes';
 import { InjectQueue } from '@nestjs/bull';
@@ -73,6 +73,40 @@ export class BotService {
     } catch (err) {
       await this.forwardToAdmin(
         'Get' + JSON.stringify(telegram_id) + ' ' + err.message,
+      );
+    }
+  }
+
+  async sendMeetings(ctx: SceneContext) {
+    const groups = {
+      1: [0, 1],
+      2: [0, 2],
+      3: [0, 1, 2],
+      4: [0, 4],
+      5: [0, 1, 4],
+      6: [0, 2, 4],
+      7: [0, 1, 2, 4],
+      0: [0],
+    };
+    try {
+      const url = `${process.env.DIRECTUS_BASE}/items/meetings`;
+      const { data: meeetings } = await lastValueFrom(
+        this.httpService.get(url),
+      );
+      let flag = true;
+      for (const meet of meeetings.data) {
+        if (groups[+ctx.session['direction']].includes(+meet.direction)) {
+          flag = false;
+          await ctx.reply(meet.text);
+        }
+      }
+      if (flag) {
+        await ctx.reply('Нет ближайщих встреч');
+        return;
+      }
+    } catch (err) {
+      await this.forwardToAdmin(
+        'Get' + JSON.stringify(ctx.from.id) + ' ' + err.message,
       );
     }
   }
