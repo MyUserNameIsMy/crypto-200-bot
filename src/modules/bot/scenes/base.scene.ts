@@ -47,14 +47,14 @@ export class BaseScene {
         ? student_system?.direction
         : 0;
       const channels = {
-        '@Akzhol_Bolatuly7': -4115948871,
-        '@Nbm808': -4148173937,
-        '@rezikhann': -4171230338,
-        '@dan7yar': -4197036835,
-        '@sherniaz16': -4167072562,
+        'https://t.me/Akzhol_Bolatuly7': -4115948871,
+        'https://t.me/Nbm808': -4148173937,
+        'https://t.me/rezikhann': -4171230338,
+        'https://t.me/dan7yar': -4197036835,
+        'https://t.me/sherniaz16': -4167072562,
       };
       ctx.session['curator'] = student_system?.new_curator;
-      ctx.session['hm_channel'] = channels[student_system.curator];
+      ctx.session['hm_channel'] = channels[student_system.new_curator];
       let direction = 'нет направления';
       switch (student_system?.direction) {
         case 1:
