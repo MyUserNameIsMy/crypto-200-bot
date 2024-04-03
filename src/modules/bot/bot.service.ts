@@ -19,6 +19,14 @@ export class BotService {
     private readonly httpService: HttpService,
   ) {}
 
+  isEveryThirdDayFromDate(startDate) {
+    const startDateObj = new Date(startDate);
+    const currentDate = new Date();
+    currentDate.setHours(currentDate.getHours() - 5);
+    const timeDiff = currentDate.getTime() - startDateObj.getTime();
+    const daysDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
+    return daysDiff % 3 === 0;
+  }
   async createClient(ctx: Context & SceneContext, client: ClientInterface) {
     try {
       console.log('Hello');
@@ -143,6 +151,29 @@ export class BotService {
     }
   }
 
+  async updateActivities(telegram_id: number, activities: []) {
+    try {
+      const student = await this.getClient(telegram_id);
+      const options = [];
+      activities.forEach((item, idx) => {
+        if (item) {
+          options.push(`option${idx + 1}`);
+        }
+      });
+      return await firstValueFrom(
+        this.httpService.post(`${process.env.DIRECTUS_BASE}/items/activities`, {
+          user_id: student.id,
+          work_done: options,
+        }),
+      );
+    } catch (err) {
+      console.log(err);
+      await this.forwardToAdmin(
+        'Update Activities' + JSON.stringify(telegram_id) + ' ' + err.message,
+      );
+    }
+  }
+
   async forwardToAdmin(details: string) {
     try {
       await this.bot.telegram.sendMessage(process.env.ADMIN, details);
@@ -217,6 +248,38 @@ export class BotService {
     } catch (err) {
       await this.forwardToAdmin('getHomework' + ' ' + err.message);
     }
+  }
+
+  getListActivities() {
+    return [
+      'Делал Домашние Задание',
+      'Заходил в сделку потрейдингу по сигналу',
+      'Заходил в крипто-проекты выданные на канале',
+      'Крутил классические связки',
+      'Крутил международные связки',
+      'Был на офлайн встречах(Алматы/Астана)',
+      'Был на онлайн встречах(ZOOM)',
+      'Смотрел запись ZOOM-встреч',
+      'Смотрел Уроки на GetCourse',
+      'Был активным в своей Команде(Telegram Чат)',
+    ];
+  }
+
+  async getActivitiesButtons(chosen_activities: []) {
+    const inline_keyboard = [];
+    const activities = this.getListActivities();
+    for (let i = 0; i < activities.length; i++) {
+      inline_keyboard.push([
+        {
+          text: activities[i] + (chosen_activities[i] ? ' 🟢' : ' 🔴'),
+          callback_data: `activities${i + 1}`,
+        },
+      ]);
+    }
+    inline_keyboard.push([{ text: 'Подтвердить', callback_data: 'confirm' }]);
+    return {
+      inline_keyboard,
+    };
   }
 
   async postGroups() {

@@ -86,16 +86,25 @@ export class BaseScene {
           `Моя почта: ${student_system?.email ? student_system?.email : 'Почта не указана'}`,
       );
 
+      if (ctx.session['work_done']) {
+        await ctx.reply(
+          `Вы последний раз отправляли рефлексию:\n${ctx.session['work_done']}`,
+        );
+      }
+
       await ctx.reply('Нажмите чтобы выбрать действие.', {
         reply_markup: {
           inline_keyboard: [
-            [{ text: 'Домашнее задание', callback_data: 'homework' }],
-            [{ text: 'Мой куратор', callback_data: 'my-curator' }],
+            [{ text: 'Домашнее задание 📚', callback_data: 'homework' }],
+            [{ text: 'Мой куратор 👩‍🏫', callback_data: 'my-curator' }],
             client?.telegram_id?.toString() == process.env.ADMIN
-              ? [{ text: 'Новости', callback_data: 'news' }]
+              ? [{ text: 'Новости 📰', callback_data: 'news' }]
               : [],
-            [{ text: 'Изменить эмэйл', callback_data: 'change_email' }],
-            [{ text: 'Встречи', callback_data: 'meetings' }],
+            this.botService.isEveryThirdDayFromDate('2024-04-03')
+              ? [{ text: 'Рефлексия 🔄', callback_data: 'activities' }]
+              : [],
+            [{ text: 'Изменить эмэйл ✉️', callback_data: 'change_email' }],
+            [{ text: 'Встречи 🤝', callback_data: 'meetings' }],
           ],
         },
       });
@@ -163,45 +172,42 @@ export class BaseScene {
       telegram_username: ctx.from.username,
       telegram_id: ctx.from?.id,
     };
+    const activities = this.botService.getListActivities();
+    let message = '';
+    for (let i = 0; i < 10; i++) {
+      if (ctx.session['activities'][i]) {
+        message += activities[i] + '\n';
+      }
+    }
     try {
-      await ctx.reply(
-        'Вы выбрали: \n' +
-          (ctx.session['option1'] ? ' Крипто Хантинг\n' : '') +
-          (ctx.session['option2'] ? ' Крипто Арбитраж\n' : '') +
-          (ctx.session['option3'] ? ' Трейдинг\n' : ''),
-      );
-      let direction = 0;
-      if (ctx.session['option1']) {
-        direction += 1;
-      }
-      if (ctx.session['option2']) {
-        direction += 2;
-      }
-      if (ctx.session['option3']) {
-        direction += 4;
-      }
-
-      if (direction == 0) {
+      if (ctx.session['activities'].every((value) => value === false)) {
         await ctx.reply(
-          'Вы не сделали выбор направления. Прошу вас сделать выбор зайдя в Меню и Выбрать направление',
+          'Вы не выбрали не одно из действий. Прошу вас сделать выбор зайдя в Меню и Выбрать направление',
+        );
+        await this.botService.forwardToAdmin(
+          JSON.stringify(client) + ' did nothing',
         );
         await ctx.scene.enter('base');
         return;
       }
-      await this.botService.updateDirection(client.telegram_id, direction);
+      await ctx.reply(`Вы выбрали:\n ${message}`);
+      await this.botService.updateActivities(
+        client.telegram_id,
+        ctx.session['activities'],
+      );
+      ctx.session['work_done'] = message;
       await ctx.scene.enter('base');
     } catch (err) {
       await ctx.reply(
-        'Ошибка при выборе направления. Пожалуйста обратитесь со скринами действий к техническому специалисту https://t.me/DoubledBo. Спасибо!',
+        'Ошибка при сдачи рефлексии. Пожалуйста обратитесь со скринами действий к техническому специалисту https://t.me/DoubledBo. Спасибо!',
       );
       await this.botService.forwardToAdmin(
         'Направление ' +
           JSON.stringify(client) +
           ' ' +
           err +
-          (ctx.session['option1'] ? ' Крипто Хантинг\n' : '') +
-          (ctx.session['option2'] ? ' Крипто Арбитраж\n' : '') +
-          (ctx.session['option3'] ? ' Трейдинг\n' : ''),
+          ' ' +
+          JSON.stringify(ctx.session['activities']),
       );
     }
   }
@@ -275,6 +281,47 @@ export class BaseScene {
           (ctx.session['option1'] ? ' Крипто Хантинг\n' : '') +
           (ctx.session['option2'] ? ' Крипто Арбитраж\n' : '') +
           (ctx.session['option3'] ? ' Трейдинг\n' : ''),
+      );
+    }
+  }
+
+  @Action(/activities/)
+  async chooseActivities(@Ctx() ctx: SceneContext) {
+    const client = {
+      firstname: ctx.from.first_name,
+      lastname: ctx.from.last_name,
+      telegram_username: ctx.from.username,
+      telegram_id: ctx.from?.id,
+    };
+    try {
+      const option = ctx.update['callback_query']['data'].replace(/\D/g, '');
+      if (option >= 1 && option <= 10) {
+        ctx.session['activities'][option - 1] =
+          !ctx.session['activities'][option - 1];
+      } else {
+        ctx.session['activities'] = new Array(10).fill(false);
+      }
+
+      await ctx.deleteMessage();
+      await ctx.reply(
+        'Вы выбрали:\n' + 'Чтобы подтвердить свой выбор нажмите Подтвердить.',
+        {
+          reply_markup: await this.botService.getActivitiesButtons(
+            ctx.session['activities'],
+          ),
+        },
+      );
+    } catch (err) {
+      await ctx.reply(
+        'Ошибка при сдачи рефлексии. Пожалуйста обратитесь со скринами действий к техническому специалисту https://t.me/DoubledBo. Спасибо!',
+      );
+      await this.botService.forwardToAdmin(
+        'Направление ' +
+          JSON.stringify(client) +
+          ' ' +
+          err +
+          ' ' +
+          JSON.stringify(ctx.session['activities']),
       );
     }
   }
