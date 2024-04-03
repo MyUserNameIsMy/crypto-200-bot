@@ -82,6 +82,7 @@ export class BaseScene {
       await ctx.reply(
         `Личный кабинет: ${student_system?.telegram_username}\n` +
           `Набранные очки: ${student_system?.score}\n` +
+          `Набранные очки рефлексия: ${student_system?.activity_score}\n` +
           `Направление: ${direction}\n` +
           `Моя почта: ${student_system?.email ? student_system?.email : 'Почта не указана'}`,
       );
