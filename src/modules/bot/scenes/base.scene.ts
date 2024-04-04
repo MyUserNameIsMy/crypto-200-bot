@@ -46,6 +46,7 @@ export class BaseScene {
       ctx.session['direction'] = student_system?.direction
         ? student_system?.direction
         : 0;
+      ctx.session['subscription'] = student_system?.subscription;
       const channels = {
         'https://t.me/Akzhol_Bolatuly7': -4115948871,
         'https://t.me/Nbm808': -4148173937,
@@ -173,7 +174,9 @@ export class BaseScene {
       telegram_username: ctx.from.username,
       telegram_id: ctx.from?.id,
     };
-    const activities = this.botService.getListActivities();
+    const activities = this.botService.getListActivities(
+      ctx.session['subscription'],
+    );
     let message = '';
     for (let i = 0; i < 10; i++) {
       if (ctx.session['activities'][i]) {
@@ -309,6 +312,7 @@ export class BaseScene {
         {
           reply_markup: await this.botService.getActivitiesButtons(
             ctx.session['activities'],
+            ctx.session['subscription'],
           ),
         },
       );
